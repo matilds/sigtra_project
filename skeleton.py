@@ -61,6 +61,9 @@ def main():
     A = np.sqrt(2)
     xc = A*np.sin(Wc)
 
+    # Modulated signal
+    xm = xc*xb
+
     # Channel simulation
     # TODO: Enable channel simulation.
     # N.B.: Requires the sampling frequency fs as an input
