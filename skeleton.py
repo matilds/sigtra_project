@@ -64,7 +64,7 @@ def main():
     # Channel simulation
     # TODO: Enable channel simulation.
     # N.B.: Requires the sampling frequency fs as an input
-    yr = wcs.simulate_channel(xt, fs)
+    yr = wcs.simulate_channel(xm, fs)
 
     # TODO: Put your receiver code here. Replace the three lines below, they
     # are only there for illustration and as an MWE. Feel free to modify any
