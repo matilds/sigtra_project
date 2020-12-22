@@ -64,10 +64,13 @@ def main():
     # Modulated signal
     xm = xc*xb
 
+    # Filtered signal
+    #xt = ...
+
     # Channel simulation
     # TODO: Enable channel simulation.
     # N.B.: Requires the sampling frequency fs as an input
-    yr = wcs.simulate_channel(xm, fs)
+    # yr = wcs.simulate_channel(xt, fs)
 
     # TODO: Put your receiver code here. Replace the three lines below, they
     # are only there for illustration and as an MWE. Feel free to modify any
