@@ -86,18 +86,39 @@ def main():
     plt.xticks(np.arange(0, 30, 1))
     plt.show()"""
 
-    # Filtered signal (band-limited signal)  # TODO
-    # xt = ...
+    # Filtered signal (band-limited signal)
+
+    # Lowpass
+    # TODO: Insert newly calculated N
+    N = 35
+    # TODO: Recalculate normalized pass and stop band
+    Ws = np.array(
+        [0, 41 / 80, 21 / 40, 1])  # Normalized pass band and stop band
+    Asopt = np.array([1, 0])
+    bopt = signal.remez(N + 1, Ws / 2, Asopt)  # Calculate coefficients
+
+    xt = signal.lfilter(bopt, 1, xm)
+
+    # Highpass
+    # TODO: Insert newly calculated N
+    N = 35
+    # TODO: Recalculate normalized pass and stop band
+    Ws = np.array(
+        [0, 19 / 40, 39 / 80, 1])  # Normalized pass band and stop band
+    Asopt = np.array([0, 1])
+    bopt = signal.remez(N + 1, Ws / 2, Asopt)
+
+    xt = signal.lfilter(bopt, 1, xt)
 
     # Channel simulation
     # TODO: Enable channel simulation.
     # N.B.: Requires the sampling frequency fs as an input
-    # yr = wcs.simulate_channel(xt, fs)
+    yr = wcs.simulate_channel(xt, fs)
 
     # TODO: Put your receiver code here. Feel free to modify any
     # other parts of the code as you see fit, of course.
 
-    # Filtered signal (band-limited signal)  # TODO
+    # Filtered signal (band-limited signal)  # TODO (Same as for transmitter)
     # ym = ...
 
     # Demodulated signal # TODO: Uncomment when filtered signal is done
@@ -114,7 +135,7 @@ def main():
     yb = xb * np.exp(1j * np.pi / 5) + 0.1 * np.random.randn(xb.shape[0])  #
     # Should be removed
     ybm = np.abs(yb)  # Should be: ybm = np.abs(yb) (already correct)
-    ybp = np.angle(yb)
+    ybp = np.angle(yb) # TODO: Unsure if this is correct or not
 
     # Baseband and string decoding
     br = wcs.decode_baseband_signal(ybm, ybp, Kb)
