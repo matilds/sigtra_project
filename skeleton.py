@@ -87,28 +87,18 @@ def main():
     plt.show()"""
 
     # Filtered signal (band-limited signal)
+    # IIR Band pass filter
+    ws = 2 * np.pi * 16000
+    wpass = [(2 * np.pi * 3900) / (ws / 2),
+             (2 * np.pi * 4100) / (ws / 2)]  # Normalized
+    wstop = [(2 * np.pi * 3850) / (ws / 2),
+             (2 * np.pi * 4150) / (ws / 2)]  # Normalized
+    Apass = 3
+    Astop = 20
+    N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
+    b, a = signal.cheby1(N, Apass, wn, btype='bandpass')
 
-    # Lowpass
-    # TODO: Insert newly calculated N
-    N = 35
-    # TODO: Recalculate normalized pass and stop band
-    Ws = np.array(
-        [0, 41 / 80, 21 / 40, 1])  # Normalized pass band and stop band
-    Asopt = np.array([1, 0])
-    bopt = signal.remez(N + 1, Ws / 2, Asopt)  # Calculate coefficients
-
-    xt = signal.lfilter(bopt, 1, xm)
-
-    # Highpass
-    # TODO: Insert newly calculated N
-    N = 35
-    # TODO: Recalculate normalized pass and stop band
-    Ws = np.array(
-        [0, 19 / 40, 39 / 80, 1])  # Normalized pass band and stop band
-    Asopt = np.array([0, 1])
-    bopt = signal.remez(N + 1, Ws / 2, Asopt)
-
-    xt = signal.lfilter(bopt, 1, xt)
+    xt = signal.lfilter(b, a, xm)
 
     # Channel simulation
     # TODO: Enable channel simulation.
