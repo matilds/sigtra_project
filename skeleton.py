@@ -64,7 +64,7 @@ def main():
     # too, of course)
 
     # Carrier signal
-    k = np.arange(0, len(xb), 1)  # TODO: Range of k?
+    k = np.arange(0, len(xb), 1)
     Wc = np.pi / 2
     A = np.sqrt(2)
     xc = A * np.sin(Wc * k)
@@ -101,15 +101,15 @@ def main():
     xt = signal.lfilter(b, a, xm)
 
     # Channel simulation
-    # TODO: Enable channel simulation.
     # N.B.: Requires the sampling frequency fs as an input
     yr = wcs.simulate_channel(xt, fs)
 
     # TODO: Put your receiver code here. Feel free to modify any
-    # other parts of the code as you see fit, of course.
+    #  other parts of the code as you see fit, of course.
 
-    # Filtered signal (band-limited signal)  # TODO (Same as for transmitter)
-    # ym = ...
+    # Filtered signal (band-limited signal)
+    # IIR Band pass filter (Reusing from the transmitter)
+    ym = signal.lfilter(b, a, yr)
 
     # Demodulated signal # TODO: Uncomment when filtered signal is done
     # yId = ym*np.cos(Wc*k)
