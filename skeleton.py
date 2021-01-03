@@ -98,6 +98,10 @@ def main():
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
     b, a = signal.cheby1(N, Apass, wn, btype='bandpass')
 
+    # To check stability with poles
+    # z, p, k = signal.cheby1(N, Apass, wn, btype='bandpass', output='zpk')
+    # print(p)
+
     xt = signal.lfilter(b, a, xm)
 
     # Channel simulation
@@ -111,21 +115,26 @@ def main():
     # IIR Band pass filter (Reusing from the transmitter)
     ym = signal.lfilter(b, a, yr)
 
-    # Demodulated signal # TODO: Uncomment when filtered signal is done
-    # yId = ym*np.cos(Wc*k)
-    # yQd = -ym*np.sin(Wc*k)
+    # Demodulated signal
+    yId = ym*np.cos(Wc*k)
+    yQd = -ym*np.sin(Wc*k)
 
-    # Low-pass filtered IQ-signals (pure IQ baseband signals)  # TODO
-    # yIb = ...
-    # yQb = ...
-    # yb = yIb + 1j*yQb
+    # Low-pass filtered IQ-signals (pure IQ baseband signals)
+    wpass = (2 * np.pi * 100) / (ws / 2)  # Normalized
+    wstop = (2 * np.pi * 150) / (ws / 2)  # Normalized
+    N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
+    b, a = signal.cheby1(N, Apass, wn, btype='lowpass')
 
-    # TODO: Replace the three lines below, they are only there for
-    #  illustration and as an MWE.
-    yb = xb * np.exp(1j * np.pi / 5) + 0.1 * np.random.randn(xb.shape[0])  #
-    # Should be removed
-    ybm = np.abs(yb)  # Should be: ybm = np.abs(yb) (already correct)
-    ybp = np.angle(yb) # TODO: Unsure if this is correct or not
+    # To check stability with poles
+    # z, p, k = signal.cheby1(N, Apass, wn, btype='lowpass', output='zpk')
+    # print(p)
+
+    yIb = signal.lfilter(b, a, yId)
+    yQb = signal.lfilter(b, a, yQd)
+
+    # Recover symbol information and transmissions
+    ybp = np.arctan2(yQb, yIb)
+    ybm = np.sqrt(yIb**2+yQb**2)
 
     # Baseband and string decoding
     br = wcs.decode_baseband_signal(ybm, ybp, Kb)
