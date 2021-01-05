@@ -26,7 +26,7 @@ Main
 
 def main():
     # Parameters
-    Kb = 8  # Symbol width in samples
+    Kb = 320  # Symbol width in samples
     fs = 16000  # Sampling frequency in Hz
     # ...
 
@@ -50,18 +50,19 @@ def main():
     else:
         bs = np.array([bit for bit in map(int, data)])
 
+    #####################
+    #####TRANSMITTER#####
+    #####################
+
     # Encode baseband signal
     xb = wcs.encode_baseband_signal(bs, Kb)
 
     # Optional plotting of the baseband signal
     """fig, ax = plt.subplots()
-    ax.plot(np.arange(0, 30, 1), xb[0:30])
+    ax.plot(np.arange(0, len(xb), 1), xb)
     ax.grid()
     plt.xticks(np.arange(0, 30, 1))
     plt.show()"""
-
-    # TODO: Put your transmitter code here (feel free to modify any other parts
-    # too, of course)
 
     # Carrier signal
     k = np.arange(0, len(xb), 1)
@@ -88,7 +89,7 @@ def main():
 
     # Filtered signal (band-limited signal)
     # IIR Band pass filter
-    ws = 2 * np.pi * 16000
+    ws = 2 * np.pi * fs
     wpass = [(2 * np.pi * 3900) / (ws / 2),
              (2 * np.pi * 4100) / (ws / 2)]  # Normalized
     wstop = [(2 * np.pi * 3850) / (ws / 2),
@@ -108,20 +109,20 @@ def main():
     # N.B.: Requires the sampling frequency fs as an input
     yr = wcs.simulate_channel(xt, fs)
 
-    # TODO: Put your receiver code here. Feel free to modify any
-    #  other parts of the code as you see fit, of course.
+    ##################
+    #####RECEIVER#####
+    ##################
 
     # Filtered signal (band-limited signal)
     # IIR Band pass filter (Reusing from the transmitter)
     ym = signal.lfilter(b, a, yr)
-
     # Demodulated signal
     yId = ym*np.cos(Wc*k)
     yQd = -ym*np.sin(Wc*k)
 
     # Low-pass filtered IQ-signals (pure IQ baseband signals)
-    wpass = (2 * np.pi * 100) / (ws / 2)  # Normalized
-    wstop = (2 * np.pi * 150) / (ws / 2)  # Normalized
+    wpass = (2 * np.pi * 4100) / (ws / 2)  # Normalized
+    wstop = (2 * np.pi * 4150) / (ws / 2)  # Normalized
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
     b, a = signal.cheby1(N, Apass, wn, btype='lowpass')
 
@@ -133,13 +134,19 @@ def main():
     yQb = signal.lfilter(b, a, yQd)
 
     # Recover symbol information and transmissions
-    ybp = np.arctan2(yQb, yIb)
-    ybm = np.sqrt(yIb**2+yQb**2)
+    ybp = np.arctan2(yQb, yIb)  # Phase
+    ybm = np.sqrt(yIb**2+yQb**2)  # Magnitude
 
     # Baseband and string decoding
     br = wcs.decode_baseband_signal(ybm, ybp, Kb)
     data_rx = wcs.decode_string(br)
     print('Received: ' + data_rx)
+
+    # Optional plotting of received baseband signal
+    """fig, ax = plt.subplots()
+    ax.plot(np.arange(0, len(br), 1), br)
+    ax.grid()
+    plt.show()"""
 
 
 if __name__ == "__main__":

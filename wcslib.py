@@ -27,8 +27,8 @@ def decode_string(inbin):
 
 # Encode a bit sequence into a baseband signal
 def encode_baseband_signal(b, Kb, s=[-1, 1]):
-    # Prepend synchronization sequence
-    b = np.concatenate(([1, 0], b))
+    # Prepend synchronization sequence and a trailing zero
+    b = np.concatenate(([1, 0], b, [0]))
 
     # Encode bit values
     b[b == 0] = s[0]
@@ -49,24 +49,37 @@ def encode_baseband_signal(b, Kb, s=[-1, 1]):
 # Decode a baseband signal into a bit sequence
 # TODO: Should take 's' into account. Hardcoded to -1/1 now.
 def decode_baseband_signal(xm, xp, Kb, sigma2=0.01, s=[-1, 1]):
-    # (Quick&dirty) synchronization
+    # Signal detection
     x = xm**2/np.var(xm[0:100])
-    xb = chi2.cdf(x, 2) > 0.99
-    k0 = np.argmax(xb)
+    d = chi2.cdf(x, 2) > 0.99
+
+    # Synchronize using a matched filter. N.B: Expects the first to bits to be
+    # [1, 0] as prepended by encode_baseband_signal()
+    b = np.concatenate((np.ones(Kb), -np.ones(Kb)))
+    xd = np.sign(xp)*d
+    xs = signal.lfilter(b, 1, xd)
+    k0 = np.argmax(abs(xs/(2*Kb)) > 0.75)
+
+    # (Quick&dirty) synchronization (old code)
+#    x = xm**2/np.var(xm[0:100])
+#    xb = chi2.cdf(x, 2) > 0.99
+#    k0 = np.argmax(xb)
 
     # Get bits and change possible 180 degree phase shifts by normalizing with
-    # the first bit's sign (b/c of the synchronization sequence '1 0', we know
-    # that the first bit must be a '1' and thus the symbol '1'). Also strip the
-    # first two bits that are used for synchronization.
-    #b = np.sign(xp[k0+Kb::Kb])
-    b = np.sign(xp[k0+int(0.9*Kb)::Kb])
-    b = b[2:]/b[0]
+    # the -first- second bit's sign (b/c of the synchronization sequence '1 0',
+    # we know that the -first- second bit must be a -'1'- '0' and thus the
+    # symbol -'1'- '-1'). Also strip the first two bits that are used for
+    # synchronization.
+#    b = np.sign(xp[k0+int(0.9*Kb)::Kb])
+#    b = b[2:]/b[0]
+    b = np.sign(xp[k0::Kb])
+    b = b[1:]/(-b[0])
 
     return b > 0
 
 
 # Channel simulation
-def simulate_channel(x, fs, channel_id=0, sigma2=0.01, dmax=5):
+def simulate_channel(x, fs, channel_id=0, sigma2=0.25, dmax=5):
     # Propagation
     c = 340
     d = dmax*np.random.rand(1)
@@ -80,10 +93,12 @@ def simulate_channel(x, fs, channel_id=0, sigma2=0.01, dmax=5):
     vn = np.sqrt(sigma2)*np.random.randn(Nx)
 
     # Interference
-    if False:
-        vi = np.zeros(Nx)
+#    fi = 900+(4250-900)*np.random.rand(3)
+#    Ai = 0.25 + 0.5*np.random.rand(3)
+#    vi = np.inner(Ai, np.sin(2*np.pi*fs*np.outer(fi, np.arange(0, x.shape[0]))).T)
+    vi = 0
 
     # Construct received signal
-    y = signal.lfilter(b, 1, x) + vn #+ vi
+    y = signal.lfilter(b, 1, x) + vn + vi
 
     return y
