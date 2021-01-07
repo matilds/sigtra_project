@@ -133,9 +133,11 @@ def main():
     yIb = signal.lfilter(b, a, yId)
     yQb = signal.lfilter(b, a, yQd)
 
+    yb = yIb + 1j*yQb
+
     # Recover symbol information and transmissions
-    ybp = np.arctan2(yQb, yIb)  # Phase
-    ybm = np.sqrt(yIb**2+yQb**2)  # Magnitude
+    ybp = np.angle(yb)  # Phase
+    ybm = np.abs(yb)  # Magnitude
 
     # Baseband and string decoding
     br = wcs.decode_baseband_signal(ybm, ybp, Kb)
