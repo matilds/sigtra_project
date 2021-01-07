@@ -26,6 +26,8 @@ Main
 
 def main():
     # Parameters
+    pi = np.pi
+
     Kb = 320  # Symbol width in samples
     fs = 16000  # Sampling frequency in Hz
     # ...
@@ -66,7 +68,7 @@ def main():
 
     # Carrier signal
     k = np.arange(0, len(xb), 1)
-    Wc = np.pi / 2
+    Wc = pi / 2
     A = np.sqrt(2)
     xc = A * np.sin(Wc * k)
 
@@ -89,11 +91,13 @@ def main():
 
     # Filtered signal (band-limited signal)
     # IIR Band pass filter
-    ws = 2 * np.pi * fs
-    wpass = [(2 * np.pi * 3900) / (ws / 2),
-             (2 * np.pi * 4100) / (ws / 2)]  # Normalized
-    wstop = [(2 * np.pi * 3850) / (ws / 2),
-             (2 * np.pi * 4150) / (ws / 2)]  # Normalized
+    ws = 2 * pi * fs
+    nyq = (ws / 2)
+
+    wpass = [(2 * pi * 3900) / nyq,
+             (2 * pi * 4100) / nyq]  # Normalized
+    wstop = [(2 * pi * 3850) / nyq,
+             (2 * pi * 4150) / nyq]  # Normalized
     Apass = 3
     Astop = 20
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
@@ -121,8 +125,12 @@ def main():
     yQd = -ym*np.sin(Wc*k)
 
     # Low-pass filtered IQ-signals (pure IQ baseband signals)
-    wpass = (2 * np.pi * 4100) / (ws / 2)  # Normalized
-    wstop = (2 * np.pi * 4150) / (ws / 2)  # Normalized
+    wpass = (2 * pi * 1000) / nyq  # Normalized
+    wstop = (2 * pi * 4000) / nyq  # Normalized
+
+    Apass = 1
+    Astop = 50
+
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
     b, a = signal.cheby1(N, Apass, wn, btype='lowpass')
 
