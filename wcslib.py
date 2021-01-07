@@ -10,6 +10,7 @@ Library for the wireless communication system project in Signals and Transforms
 import numpy as np
 from scipy import signal
 from scipy.stats import chi2
+import matplotlib.pyplot as plt
 
 
 # Conversion of string to binary numpy array
@@ -53,7 +54,7 @@ def decode_baseband_signal(xm, xp, Kb, sigma2=0.01, s=[-1, 1]):
     x = xm**2/np.var(xm[0:100])
     d = chi2.cdf(x, 2) > 0.99
 
-    # Synchronize using a matched filter. N.B: Expects the first to bits to be
+    # Synchronize using a matched filter. N.B: Expects the first two bits to be
     # [1, 0] as prepended by encode_baseband_signal()
     b = np.concatenate((np.ones(Kb), -np.ones(Kb)))
     xd = np.sign(xp)*d
@@ -74,7 +75,6 @@ def decode_baseband_signal(xm, xp, Kb, sigma2=0.01, s=[-1, 1]):
 #    b = b[2:]/b[0]
     b = np.sign(xp[k0::Kb])
     b = b[1:]/(-b[0])
-
     return b > 0
 
 

@@ -25,10 +25,7 @@ Main
 
 
 def main():
-    # Parameters
-    Kb = 320  # Symbol width in samples
-    fs = 16000  # Sampling frequency in Hz
-    # ...
+    loop = 10
 
     # Detect input or set defaults
     string_data = True
@@ -49,6 +46,15 @@ def main():
         bs = wcs.encode_string(data)
     else:
         bs = np.array([bit for bit in map(int, data)])
+
+    for i in range(0, loop):
+        transmit(bs)
+
+
+def transmit(bs):
+    # Parameters
+    Kb = 320  # Symbol width in samples
+    fs = 16000  # Sampling frequency in Hz
 
     #####################
     #####TRANSMITTER#####
@@ -117,12 +123,15 @@ def main():
     # IIR Band pass filter (Reusing from the transmitter)
     ym = signal.lfilter(b, a, yr)
     # Demodulated signal
-    yId = ym*np.cos(Wc*k)
-    yQd = -ym*np.sin(Wc*k)
+    yId = ym * np.cos(Wc * k)
+    yQd = -ym * np.sin(Wc * k)
 
     # Low-pass filtered IQ-signals (pure IQ baseband signals)
-    wpass = (2 * np.pi * 4100) / (ws / 2)  # Normalized
-    wstop = (2 * np.pi * 4150) / (ws / 2)  # Normalized
+    wpass = (2 * np.pi * 1000) / (ws / 2)  # Normalized
+    wstop = (2 * np.pi * 4000) / (ws / 2)  # Normalized
+    Apass = 1
+    Astop = 50
+
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
     b, a = signal.cheby1(N, Apass, wn, btype='lowpass')
 
@@ -133,7 +142,7 @@ def main():
     yIb = signal.lfilter(b, a, yId)
     yQb = signal.lfilter(b, a, yQd)
 
-    yb = yIb + 1j*yQb
+    yb = yIb + 1j * yQb
 
     # Recover symbol information and transmissions
     ybp = np.angle(yb)  # Phase
