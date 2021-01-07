@@ -96,10 +96,11 @@ def transmit(bs):
     # Filtered signal (band-limited signal)
     # IIR Band pass filter
     ws = 2 * np.pi * fs
-    wpass = [(2 * np.pi * 3900) / (ws / 2),
-             (2 * np.pi * 4100) / (ws / 2)]  # Normalized
-    wstop = [(2 * np.pi * 3850) / (ws / 2),
-             (2 * np.pi * 4150) / (ws / 2)]  # Normalized
+    nq = ws / 2
+    wpass = [(2 * np.pi * 3900) / nq,
+             (2 * np.pi * 4100) / nq]  # Normalized
+    wstop = [(2 * np.pi * 3850) / nq,
+             (2 * np.pi * 4150) / nq]  # Normalized
     Apass = 3
     Astop = 20
     N, wn = signal.cheb1ord(wpass, wstop, Apass, Astop)
@@ -127,8 +128,8 @@ def transmit(bs):
     yQd = -ym * np.sin(Wc * k)
 
     # Low-pass filtered IQ-signals (pure IQ baseband signals)
-    wpass = (2 * np.pi * 1000) / (ws / 2)  # Normalized
-    wstop = (2 * np.pi * 4000) / (ws / 2)  # Normalized
+    wpass = (2 * np.pi * 1000) / nq  # Normalized
+    wstop = (2 * np.pi * 4000) / nq  # Normalized
     Apass = 1
     Astop = 50
 
